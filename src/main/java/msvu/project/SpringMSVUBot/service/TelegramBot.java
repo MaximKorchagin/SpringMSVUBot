@@ -17,9 +17,14 @@ import java.util.Stack;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
-    private static final String DB_USERNAME = "postgres";
-    private static final String DB_PASSWORD = "g7Jxm4Pwd";
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/testDB";
+    private static final String DB_USERNAME = "maximkorchagin";
+    private static final String DB_PASSWORD = "postgres";
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/postgres";
+    private static final String BOTINFO = "Бот имеет следующие команды: \n" +
+            "/start - начать процесс общения с ботом \n" +
+            "/list - вывести список всех заявок \n" +
+            "/floppa - отправить Флоппу \n" +
+            "/addtask - создать новую заявку \n";
 
     public static final long ADMINCHATID = 426707306;
     final BotConfig config;
@@ -62,7 +67,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case WHAT_IS_YOUR_NAME:
                         String fio = update.getMessage().getText();
                         addUserToDB(chatId, userId, fio);
-                        sendMessage(chatId, "Вы ввели ваше имя) - " + fio);
+                        //sendMessage(chatId, "Вы ввели ваше имя) - " + fio);
                         map.put(userId, LastQuestionAsked.NOTHING);
                         break;
                     case DB_PRINTED:
@@ -77,9 +82,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                         break;
                     case NOTHING:
                         switch (messageText) {
-                            case "/dotask":
+                            case "/info":
+                                sendMessage(chatId, BOTINFO);
+                                break;
+                            case "/list":
                                 printBD(chatId, userId);
-                                sendMessage(chatId, "Вы получили базу данных. Какой молодец!");
                                 break;
                             case "/addtask":
                                 sendMessage(chatId, "Введите задачу, которую вы хотите добавить в список задач");
