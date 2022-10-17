@@ -269,7 +269,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(animation);
         } catch (TelegramApiException e) {
-
+            //commit test
         }
     }
 }
