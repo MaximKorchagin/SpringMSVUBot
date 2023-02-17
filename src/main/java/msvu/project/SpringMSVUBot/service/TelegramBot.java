@@ -11,21 +11,22 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
-    private static final String DB_USERNAME = "postgres";
-    private static final String DB_PASSWORD = "g7Jxm4Pwd";
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/testDB";
 
     public static final long ADMINCHATID = 426707306;
     final BotConfig config;
 
-    public TelegramBot(BotConfig config) throws SQLException {
+    final ClassForDB classForDB;
+
+
+    public TelegramBot(BotConfig config, ClassForDB classForDB) throws SQLException {
         this.config = config;
+        this.classForDB = classForDB;
     }
     @Override
     public String getBotUsername() {
@@ -37,7 +38,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         return config.getToken();
     }
 
-    Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
     Map<Long, LastQuestionAsked> map = new HashMap<>();
 
     @Override
@@ -48,7 +48,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
-            if (checkIfUserExist(userId) && !map.containsKey(userId)) {
+            if (classForDB.checkIfUserExist(userId) && !map.containsKey(userId)) {
                 map.put(userId, LastQuestionAsked.NOTHING);
             }
 
@@ -61,7 +61,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 switch (map.get(userId)) {
                     case WHAT_IS_YOUR_NAME:
                         String fio = update.getMessage().getText();
-                        addUserToDB(chatId, userId, fio);
+                        classForDB.addUserToDB(chatId, userId, fio);
                         sendMessage(chatId, "Вы ввели ваше имя) - " + fio);
                         map.put(userId, LastQuestionAsked.NOTHING);
                         break;
@@ -73,12 +73,18 @@ public class TelegramBot extends TelegramLongPollingBot {
                         //printBD(chatId, userId);
                         break;
                     case DB_ADD_REQUEST:
-                        createTask(chatId, userId, update.getMessage().getText());
+                        classForDB.createTask(chatId, userId, update.getMessage().getText());
+                        sendMessage(chatId, "Вы успешно добавили задачу: " + update.getMessage().getText());
+                        map.put(userId, LastQuestionAsked.NOTHING);
                         break;
                     case NOTHING:
                         switch (messageText) {
                             case "/dotask":
-                                printBD(chatId, userId);
+                                ArrayList<String> stringArrayList = classForDB.findAllTasks();
+                                for (String s : stringArrayList) {
+                                    sendMessage(chatId, s);
+                                }
+                                map.put(userId, LastQuestionAsked.NOTHING);
                                 sendMessage(chatId, "Вы получили базу данных. Какой молодец!");
                                 break;
                             case "/addtask":
@@ -102,31 +108,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
     }
-
-//            if (!map.containsKey(userId)) {
-//                switch (messageText) {
-//                    case "/start":
-//                        initUser(chatId, userId, update);
-//                        break;
-//                case "/dotask":
-//                    printBD(chatId, userId);
-//                    default:
-//                        sendMessage(chatId, "Sorry, command was not recognized");
-//                }
-//            } else {
-//                switch (map.get(userId)) {
-//                    case WHAT_IS_YOUR_NAME:
-//                        String fio = update.getMessage().getText();
-//                        sendMessage(chatId, fio);
-//                        map.put(userId, LastQuestionAsked.NOTHING);
-//                        break;
-//                    case DB_PRINTED:
-//                        sendMessage(chatId, "Вы получили базу данных. Какой молодец");
-//                        break;
-//                }
-//            }
-
-//        }
 
     private void startCommandReceived(long chatId, String name) {
         String answer = "Hi, " + name + ", nice to meet you!";
@@ -154,81 +135,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     }
 
-    private void addUserToDB(long chatId, long userId, String fio) {
-        try {
-
-            String sql = "insert into users (name, userid) values (?, ?);";
-            String sql2 = "select userid from users where userid = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            PreparedStatement preparedStatement2 = connection.prepareStatement(sql2);
-            preparedStatement2.setLong(1, userId);
-            //preparedStatement2.execute();
-            ResultSet zalupa = preparedStatement2.executeQuery();
-            if (!zalupa.next()) {
-                preparedStatement.setString(1, fio);
-                preparedStatement.setLong(2, userId);
-                preparedStatement.executeUpdate();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean checkIfUserExist(long userId) {
-        try {
-            String sql = "select userid from users where userid = ?;";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setLong(1, userId);
-            ResultSet result = preparedStatement.executeQuery();
-            return result.next();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    //TODO vvv
-
-    private void changeTaskStatusToDone(long chatId, long userId, String messageText) {
-        try {
-            String sql = "update task set state = 'DONE' where id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            int taskId = Integer.parseInt(messageText);
-            preparedStatement.setInt(1, taskId);
-            preparedStatement.executeUpdate();
-            map.put(userId, LastQuestionAsked.NOTHING);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void printBD(long chatId, long userId) {
-        try {
-            Statement statement = connection.createStatement();
-            String SQL_SELECT_TASKS = "select * from task order by id";
-            ResultSet result = statement.executeQuery(SQL_SELECT_TASKS);
-            while (result.next()) {
-                sendMessage(chatId, result.getInt("id")
-                        + " " + result.getString("name")
-                        + " " + result.getString("state"));
-                map.put(userId, LastQuestionAsked.NOTHING);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void createTask(long chatId, long userId, String messageText) {
-        try {
-            String sql = "insert into task (name, state) values (?, 'IN_PROGRESS');";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            String taskName = messageText;
-            preparedStatement.setString(1, taskName);
-            preparedStatement.executeUpdate();
-            sendMessage(chatId, "Вы успешно добавили задачу: " + taskName);
-            map.put(userId, LastQuestionAsked.NOTHING);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private void tryToGetChatId(long chatId, String raz) {
         String answer = "Ваш чат айди: " + raz + " отправлен администратору.";
