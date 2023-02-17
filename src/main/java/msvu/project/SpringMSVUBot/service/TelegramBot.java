@@ -150,14 +150,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(textToSend);
-        //SendAnimation animation = new SendAnimation();
-        //animation.setChatId(chatId);
-        //animation.setAnimation(new InputFile("CgACAgIAAxkBAAIFqGMl6RNYxoC8skTLr4uxgVHpBr91AAJHGAACTHlgSg8bDqbiWzocKQQ"));
         try {
             execute(message);
             //execute(animation);
         } catch (TelegramApiException e) {
-            //boolean sex = true;
         }
     }
 
@@ -168,7 +164,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         try {
             execute(animation);
         } catch (TelegramApiException e) {
-            //commit test
         }
     }
 }
