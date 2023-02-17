@@ -68,13 +68,13 @@ public class ClassForDB {
             Statement statement = connection.createStatement();
             String SQL_SELECT_TASKS = "select * from task order by id";
             ResultSet result = statement.executeQuery(SQL_SELECT_TASKS);
-            ArrayList<String> vladislav = new ArrayList<>();
+            ArrayList<String> tasks = new ArrayList<>();
             while (result.next()) {
-                vladislav.add(result.getInt("id")
+                tasks.add(result.getInt("id")
                         + " " + result.getString("name")
                         + " " + result.getString("state"));
             }
-            return vladislav;
+            return tasks;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
