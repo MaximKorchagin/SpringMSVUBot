@@ -20,7 +20,6 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public static final long ADMINCHATID = 426707306;
     final BotConfig config;
-
     final ClassForDB classForDB;
 
 
