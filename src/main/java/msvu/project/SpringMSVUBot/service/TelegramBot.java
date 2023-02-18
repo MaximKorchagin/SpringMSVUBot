@@ -14,6 +14,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
@@ -21,8 +22,14 @@ public class TelegramBot extends TelegramLongPollingBot {
     public static final long ADMINCHATID = 426707306;
     final BotConfig config;
     final ClassForDB classForDB;
+    final String[] floppaGifsArray = {"CgACAgIAAxkBAAIFqGMl6RNYxoC8skTLr4uxgVHpBr91AAJHGAACTHlgSg8bDqbiWzocKQQ",
+            "CgACAgQAAxkBAAIHKGPws7AKnfXmJlF0qHqGBPhXe96aAALuAgACYRAUU9F-Efjm4TlTLgQ",
+            "CgACAgIAAxkBAAIIRmPw8Zh2zjLfC2RAfKSuFxxmdlP4AAK4HgACRUpYSqHsAuuEpCULLgQ",
+            "CgACAgQAAxkBAAIIR2Pw8dMbW-K0iPhVEL7twnv5NEWgAALuAgAC4skdU4e98jeLydz2LgQ",
+            "CgACAgQAAxkBAAIISGPw8gQj5dLrM8y5g4nJ-8Q2lGwmAAIkAwACBlsMUylv1UsSg-jlLgQ",
+            "CgACAgQAAxkBAAIISWPw8hfmMQ_m1jGEab_2qHLu7JGlAALpAgACccwMU6xRPEVSqDHQLgQ"};
 
-
+    Random random = new Random();
     public TelegramBot(BotConfig config, ClassForDB classForDB) throws SQLException {
         this.config = config;
         this.classForDB = classForDB;
@@ -41,6 +48,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+
+
 
         if (update.hasMessage() && update.getMessage().hasText()) {
             long userId = update.getMessage().getChat().getId();
@@ -159,7 +168,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void sendFloppa(long chatId) {
         SendAnimation animation = new SendAnimation();
         animation.setChatId(chatId);
-        animation.setAnimation(new InputFile("CgACAgIAAxkBAAIFqGMl6RNYxoC8skTLr4uxgVHpBr91AAJHGAACTHlgSg8bDqbiWzocKQQ"));
+        animation.setAnimation(new InputFile(floppaGifsArray[random.nextInt(floppaGifsArray.length)]));
         try {
             execute(animation);
         } catch (TelegramApiException e) {
