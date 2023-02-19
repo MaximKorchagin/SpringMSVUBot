@@ -1,6 +1,7 @@
 package msvu.project.SpringMSVUBot.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import msvu.project.SpringMSVUBot.service.TelegramBot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -12,6 +13,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class BotInitializer {
 
     final TelegramBot bot;
@@ -23,6 +25,7 @@ public class BotInitializer {
             telegramBotsApi.registerBot(bot);
         }
         catch (TelegramApiException e) {
+            log.error("Error occurred: " + e.getMessage());
         }
     }
 }
