@@ -14,4 +14,10 @@ public class BotConfig {
     String botName;
     @Value("${bot.token}")
     String token;
+    @Value("${db.url}")
+    String dbUrl;
+    @Value("${db.username}")
+    String dbUsername;
+    @Value("${db.password}")
+    String dbPassword;
 }

@@ -1,20 +1,23 @@
 package msvu.project.SpringMSVUBot.service;
 
+import lombok.extern.slf4j.Slf4j;
+import msvu.project.SpringMSVUBot.config.BotConfig;
 import org.springframework.stereotype.Component;
 
 import java.sql.*;
 import java.util.ArrayList;
 @Component
+@Slf4j
 public class ClassForDB {
-    private static final String DB_USERNAME = "postgres";
-    private static final String DB_PASSWORD = "g7Jxm4Pwd";
-    private static final String DB_URL = "jdbc:postgresql://localhost:5432/postgres";
+    final BotConfig config;
     Connection connection;
 
-    public ClassForDB() {
+    public ClassForDB(BotConfig config) {
+        this.config = config;
         try {
-            connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+            connection = DriverManager.getConnection(config.getDbUrl(), config.getDbUsername(), config.getDbPassword());
         } catch (SQLException e) {
+            log.error("Error occurred :" + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -34,6 +37,7 @@ public class ClassForDB {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
+            log.error("Error occurred :" + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -46,6 +50,7 @@ public class ClassForDB {
             ResultSet result = preparedStatement.executeQuery();
             return result.next();
         } catch (SQLException e) {
+            log.error("Error occurred :" + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -76,6 +81,7 @@ public class ClassForDB {
             }
             return tasks;
         } catch (SQLException e) {
+            log.error("Error occurred :" + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -87,6 +93,7 @@ public class ClassForDB {
             preparedStatement.setString(1, messageText);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
+            log.error("Error occurred :" + e.getMessage());
             throw new RuntimeException(e);
         }
     }
